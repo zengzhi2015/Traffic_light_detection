@@ -2,7 +2,7 @@ close all
 clear
 clc
 %% read and convert image to double tpye
-img = imread('img_10_575.png');
+img = imread('img_29_434.png');
 img(img==0) = 1;
 img = double(img)/255;
 %% build filters
@@ -45,7 +45,7 @@ kernal_hole = [ 0, 0,-1,-1,-1,-1, 0, 0;
 scales = 1:0.5:5;
 %% Deal with red light detection
 % rescale the kernal
-kernel_scaled = imresize(kernal_hole,s);
+kernel_scaled = imresize(kernal_hole,5);
 % normalize the positive entries
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
 % normalize and PENALIZE the negative entries !!!!!!!!!!!!!
@@ -67,8 +67,14 @@ subplot(1,3,3)
 imshow(conv_green_temp)
 % calculate the everage strength of the pulses
 mask_red_temp = conv_red_temp>0.1;
-strangth_red = sum(sum(conv_red_temp(mask_red_temp)))/sum(sum(double(conv_red_temp)));
+mask_yellow_temp = conv_yellow_temp>0.1;
+mask_green_temp = conv_green_temp>0.1;
+strangth_red = sum(sum(conv_red_temp(mask_red_temp)))/max(1,sum(sum(double(mask_red_temp))));
+strangth_yellow = sum(sum(conv_yellow_temp(mask_yellow_temp)))/max(1,sum(sum(double(mask_yellow_temp))));
+strangth_green = sum(sum(conv_green_temp(mask_green_temp)))/max(1,sum(sum(double(mask_green_temp))));
 disp(strangth_red)
+disp(strangth_yellow)
+disp(strangth_green)
 %  for s = scales
 %      % rescale the kernal
 %      kernel_scaled = imresize(kernal_hole,s);
