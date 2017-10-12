@@ -44,18 +44,18 @@ kernal3 = [-1,-1,-1;
 %            -1,-1,-1, 1, 1,-1,-1,-1;
 %            -1,-1,-1,-1,-1,-1,-1,-1;
 %            -1,-1,-1,-1,-1,-1,-1,-1;];
-kernal8 = [-1,-1,-1,-1,-1,-1,-1,-1;
-           -1,-1,-1, 0, 0,-1,-1,-1;
-           -1,-1, 0, 1, 1, 0,-1,-1;
+kernal8 = [ 0, 0,-1,-1,-1,-1, 0, 0;
+            0,-1, 0, 0, 0, 0,-1, 0;
+           -1, 0, 0, 1, 1, 0, 0,-1;
            -1, 0, 1, 1, 1, 1, 0,-1;
            -1, 0, 1, 1, 1, 1, 0,-1;
-           -1,-1, 0, 1, 1, 0,-1,-1;
-           -1,-1,-1, 0, 0,-1,-1,-1;
-           -1,-1,-1,-1,-1,-1,-1,-1;];
+           -1, 0, 0, 1, 1, 0, 0,-1;
+            0,-1, 0, 0, 0, 0,-1, 0;
+            0, 0,-1,-1,-1,-1, 0, 0;];
 ksize = [10,10];
 kernel_scaled = imresize(kernal8,ksize,'nearest');
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
-kernel_scaled(kernel_scaled<0) = -1.0*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
+kernel_scaled(kernel_scaled<0) = -1.5*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
 
 disp(sum(kernel_scaled(kernel_scaled>=0)))
 disp(sum(kernel_scaled(kernel_scaled<0)))
