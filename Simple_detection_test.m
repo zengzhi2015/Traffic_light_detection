@@ -44,8 +44,42 @@ kernal_hole = [ 0, 0,-1,-1,-1,-1, 0, 0;
 %% Set scales
 scales = 1:0.5:5;
 %% Deal with red light detection
+best_scale = -1;
+max_score = -1;
+final_ratio = [];
+for s = scales
+    % rescale the kernal
+    kernel_scaled = imresize(kernal_hole,s);
+    % normalize the positive entries
+    kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
+    % normalize and PENALIZE the negative entries !!!!!!!!!!!!!
+    kernel_scaled(kernel_scaled<0) = -1.5*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
+    % Convolution
+    conv_red_temp = conv2(red_channel,kernel_scaled,'same');
+    conv_yellow_temp = conv2(yellow_channel,kernel_scaled,'same');
+    conv_green_temp = conv2(green_channel,kernel_scaled,'same');
+    % Saturate
+    conv_red_temp(conv_red_temp<0) = 0;
+    conv_yellow_temp(conv_yellow_temp<0) = 0;
+    conv_green_temp(conv_green_temp<0) = 0;
+    % calculate the everage strength of the pulses
+    mask_red_temp = conv_red_temp>0.1;
+    mask_yellow_temp = conv_yellow_temp>0.1;
+    mask_green_temp = conv_green_temp>0.1;
+    strength_red = sum(sum(conv_red_temp(mask_red_temp)))/max(1,sum(sum(double(mask_red_temp))));
+    strength_yellow = sum(sum(conv_yellow_temp(mask_yellow_temp)))/max(1,sum(sum(double(mask_yellow_temp))));
+    strength_green = sum(sum(conv_green_temp(mask_green_temp)))/max(1,sum(sum(double(mask_green_temp))));
+    % disp([strength_red,strength_yellow,strength_green])
+    % update registers
+    if max([strength_red,strength_yellow,strength_green]) > max_score
+        max_score = max([strength_red,strength_yellow,strength_green]);
+        best_scale = s;
+        final_ratio = [strength_red,strength_yellow,strength_green];
+    end
+end
+%% Show the result
 % rescale the kernal
-kernel_scaled = imresize(kernal_hole,5);
+kernel_scaled = imresize(kernal_hole,best_scale);
 % normalize the positive entries
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
 % normalize and PENALIZE the negative entries !!!!!!!!!!!!!
@@ -69,20 +103,16 @@ imshow(conv_green_temp)
 mask_red_temp = conv_red_temp>0.1;
 mask_yellow_temp = conv_yellow_temp>0.1;
 mask_green_temp = conv_green_temp>0.1;
-strangth_red = sum(sum(conv_red_temp(mask_red_temp)))/max(1,sum(sum(double(mask_red_temp))));
-strangth_yellow = sum(sum(conv_yellow_temp(mask_yellow_temp)))/max(1,sum(sum(double(mask_yellow_temp))));
-strangth_green = sum(sum(conv_green_temp(mask_green_temp)))/max(1,sum(sum(double(mask_green_temp))));
-disp(strangth_red)
-disp(strangth_yellow)
-disp(strangth_green)
-%  for s = scales
-%      % rescale the kernal
-%      kernel_scaled = imresize(kernal_hole,s);
-%      % normalize the positive entries
-%      kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
-%      % normalize and PENALIZE the negative entries !!!!!!!!!!!!!
-%      kernel_scaled(kernel_scaled<0) = -1.5*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
-%      % Convolution
-%      conv_red_temp = conv2(red_channel,kernel_scaled,'same');
-%      
-%  end
+strength_red = sum(sum(conv_red_temp(mask_red_temp)))/max(1,sum(sum(double(mask_red_temp))));
+strength_yellow = sum(sum(conv_yellow_temp(mask_yellow_temp)))/max(1,sum(sum(double(mask_yellow_temp))));
+strength_green = sum(sum(conv_green_temp(mask_green_temp)))/max(1,sum(sum(double(mask_green_temp))));
+disp(strength_red)
+disp(strength_yellow)
+disp(strength_green)
+if max([strength_red,strength_yellow,strength_green]) == strength_red
+    disp('red light')
+elseif max([strength_red,strength_yellow,strength_green]) == strength_yellow
+    disp('yellow light')
+else
+    disp('green light')
+end
