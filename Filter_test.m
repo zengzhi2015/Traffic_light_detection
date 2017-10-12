@@ -2,7 +2,7 @@ close all
 clear
 clc
 %% read and convert image to double tpye
-img = imread('dayClip10--00000.png');
+img = imread('dayClip10--00012.png');
 img(img==0) = 1;
 img = double(img)/255;
 %% build filter
@@ -29,7 +29,8 @@ imshow(img)
 
 %% 
 figure(5)
-color_distance = sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3);
+% color_distance = sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3);
+color_distance = max(0,sum(pixel_direction.*red_filter,3)*2.5-1.5).*sum(img.*red_filter,3);
 imshow(color_distance)
 
 %% Create kernel
@@ -52,10 +53,10 @@ kernal8 = [ 0, 0,-1,-1,-1,-1, 0, 0;
            -1, 0, 0, 1, 1, 0, 0,-1;
             0,-1, 0, 0, 0, 0,-1, 0;
             0, 0,-1,-1,-1,-1, 0, 0;];
-ksize = [10,10];
+ksize = [12,12];
 kernel_scaled = imresize(kernal8,ksize,'nearest');
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
-kernel_scaled(kernel_scaled<0) = -2.0*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
+kernel_scaled(kernel_scaled<0) = -1.5*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
 
 disp(sum(kernel_scaled(kernel_scaled>=0)))
 disp(sum(kernel_scaled(kernel_scaled<0)))
@@ -67,4 +68,5 @@ result = conv2(origin,kernel_scaled,'same');
 result(result<0) = 0;
 disp(min(min(result)))
 disp(max(max(result)))
-imshow(result)
+result_show = result/max(max(result));
+imshow(result_show)
