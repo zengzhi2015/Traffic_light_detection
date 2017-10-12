@@ -7,7 +7,7 @@ img(img==0) = 1;
 img = double(img)/255;
 %% build filter
 red_filter = zeros(size(img));
-red_filter(:,:,2) = 1;
+red_filter(:,:,3) = 1;
 %% calculate pixel direction
 pixel_direction = img;
 temp_norm = sqrt(pixel_direction(:,:,1).^2+pixel_direction(:,:,2).^2+pixel_direction(:,:,3).^2);
@@ -31,8 +31,8 @@ imshow(img)
 figure(5)
 % color_distance = sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3);
 color_distance = max(0,sum(pixel_direction.*red_filter,3)*2.5-1.5).*sum(img.*red_filter,3);%!!!!!!!!!!!!!!!
-color_distance = color_distance/max(max(color_distance));
-imshow(color_distance)
+color_distance_show = color_distance/max(max(color_distance));
+imshow(color_distance_show)
 
 %% Create kernel
 kernal_hole = [ 0, 0,-1,-1,-1,-1, 0, 0;
