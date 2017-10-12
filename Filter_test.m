@@ -29,7 +29,7 @@ imshow(img)
 
 %% 
 figure(5)
-color_distance = sum(pixel_direction.*red_filter,3).*sum(img.*red_filter,3);
+color_distance = sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3);
 imshow(color_distance)
 
 %% Create kernel
@@ -55,7 +55,7 @@ kernal8 = [ 0, 0,-1,-1,-1,-1, 0, 0;
 ksize = [10,10];
 kernel_scaled = imresize(kernal8,ksize,'nearest');
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
-kernel_scaled(kernel_scaled<0) = -1.5*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
+kernel_scaled(kernel_scaled<0) = -2.0*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
 
 disp(sum(kernel_scaled(kernel_scaled>=0)))
 disp(sum(kernel_scaled(kernel_scaled<0)))
