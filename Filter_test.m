@@ -16,17 +16,21 @@ for i=1:3
 end
 %% test combination
 
+figure(1)
+imshow(img)
 %color_distance = sum(pixel_direction.*red_filter,3).*sum(img.*red_filter,3);
 %color_distance = sum(pixel_direction.*red_filter,3).*sum(img.*red_filter,3);
-% figure(1)
-% imshow(sum(pixel_direction.*red_filter,3))
 % figure(2)
+% imshow(sum(pixel_direction.*red_filter,3))
+% figure(3)
 % imshow(sum(img.*red_filter,3))
-figure(3)
-imshow(sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3))
+% figure(4)
+% imshow(sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3))
 
 %% 
-color_distance = sum(pixel_direction.*red_filter,3).^2.*sum(img.*red_filter,3);
+figure(5)
+color_distance = sum(pixel_direction.*red_filter,3).*sum(img.*red_filter,3);
+imshow(color_distance)
 
 %% Create kernel
 kernal3 = [-1,-1,-1;
@@ -45,4 +49,12 @@ kernel_scaled(kernel_scaled<0) = -kernel_scaled(kernel_scaled<0)/sum(sum(kernel_
 
 disp(sum(kernel_scaled(kernel_scaled>=0)))
 disp(sum(kernel_scaled(kernel_scaled<0)))
-%% 
+%% Convolution
+figure(6)
+origin = color_distance;
+result = conv2(origin,kernel_scaled,'same');
+result = result/2+0.5;
+result = result.^4;
+disp(min(min(result)))
+disp(max(max(result)))
+imshow(result)
