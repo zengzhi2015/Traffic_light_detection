@@ -36,16 +36,18 @@ imshow(color_distance)
 kernal3 = [-1,-1,-1;
            -1, 8,-1;
            -1,-1,-1;]/8;
-kernal6 = [-1,-1,-1,-1,-1,-1;
-           -1,-1, 2, 2,-1,-1;
-           -1, 2, 2, 2, 2,-1;
-           -1, 2, 2, 2, 2,-1;
-           -1,-1, 2, 2,-1,-1;
-           -1,-1,-1,-1,-1,-1]/24;
-ksize = [8,8];
-kernel_scaled = imresize(kernal6,ksize,'nearest');
+kernal8 = [-1,-1,-1,-1,-1,-1,-1,-1;
+           -1,-1,-1,-1,-1,-1,-1,-1;
+           -1,-1,-1, 1, 1,-1,-1,-1;
+           -1,-1, 1, 1, 1, 1,-1,-1;
+           -1,-1, 1, 1, 1, 1,-1,-1;
+           -1,-1,-1, 1, 1,-1,-1,-1;
+           -1,-1,-1,-1,-1,-1,-1,-1;
+           -1,-1,-1,-1,-1,-1,-1,-1;];
+ksize = [12,12];
+kernel_scaled = imresize(kernal8,ksize,'nearest');
 kernel_scaled(kernel_scaled>=0) = kernel_scaled(kernel_scaled>=0)/sum(sum(kernel_scaled(kernel_scaled>=0)));
-kernel_scaled(kernel_scaled<0) = -kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
+kernel_scaled(kernel_scaled<0) = -1.0*kernel_scaled(kernel_scaled<0)/sum(sum(kernel_scaled(kernel_scaled<0)));
 
 disp(sum(kernel_scaled(kernel_scaled>=0)))
 disp(sum(kernel_scaled(kernel_scaled<0)))
@@ -53,8 +55,8 @@ disp(sum(kernel_scaled(kernel_scaled<0)))
 figure(6)
 origin = color_distance;
 result = conv2(origin,kernel_scaled,'same');
-result = result/2+0.5;
-result = result.^4;
+%result = result/2+0.5;
+result(result<0) = 0;
 disp(min(min(result)))
 disp(max(max(result)))
 imshow(result)
