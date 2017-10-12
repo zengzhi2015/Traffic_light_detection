@@ -2,7 +2,7 @@ close all
 clear
 clc
 %% read and convert image to double tpye
-img = imread('img_29_434.png');
+img = imread('img_10_575.png');
 img(img==0) = 1;
 img = double(img)/255;
 %% build filters
@@ -24,13 +24,13 @@ red_channel = max(0,sum(pixel_direction.*red_filter,3)*2.5-1.5).*sum(img.*red_fi
 yellow_channel = max(0,sum(pixel_direction.*yellow_filter,3)*2.5-1.5).*sum(img.*yellow_filter,3);
 green_channel = max(0,sum(pixel_direction.*green_filter,3)*2.5-1.5).*sum(img.*green_filter,3);
 figure(1)
-subplot(2,2,1)
+subplot(3,3,2)
 imshow(img)
-subplot(2,2,2)
+subplot(3,3,4)
 imshow(red_channel)
-subplot(2,2,3)
+subplot(3,3,5)
 imshow(yellow_channel)
-subplot(2,2,4)
+subplot(3,3,6)
 imshow(green_channel)
 %% Create holo kernel
 kernal_hole = [ 0, 0,-1,-1,-1,-1, 0, 0;
@@ -92,12 +92,11 @@ conv_green_temp = conv2(green_channel,kernel_scaled,'same');
 conv_red_temp(conv_red_temp<0) = 0;
 conv_yellow_temp(conv_yellow_temp<0) = 0;
 conv_green_temp(conv_green_temp<0) = 0;
-figure(2)
-subplot(1,3,1)
+subplot(3,3,7)
 imshow(conv_red_temp)
-subplot(1,3,2)
+subplot(3,3,8)
 imshow(conv_yellow_temp)
-subplot(1,3,3)
+subplot(3,3,9)
 imshow(conv_green_temp)
 % calculate the everage strength of the pulses
 mask_red_temp = conv_red_temp>0.1;
