@@ -2,7 +2,7 @@ close all
 clear
 clc
 %% read and convert image to double tpye
-img = imread('img_10_575.png');
+img = imread('dayClip5--00015.png');
 img(img==0) = 1;
 img = double(img)/255;
 %% build filters

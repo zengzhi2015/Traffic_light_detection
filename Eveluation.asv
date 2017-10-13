@@ -1,0 +1,7 @@
+close all
+clear
+clc
+%% read and convert image to double tpye
+image = imread('dayClip5--00015.png');
+flag = f_detection( image );
+%%
