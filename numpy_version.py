@@ -10,7 +10,7 @@ Created on Sat Oct 14 08:27:19 2017
 import numpy as np
 
 # Do not inclue the following when in ROS projects
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 
@@ -67,23 +67,24 @@ def color_space_segmentation(image):
     segment_y = np.clip(segment_y*2-1,0,1)
     return segment_r,segment_g,segment_y
 #%% Simple classifier
-def simple_detector(image):
+def simple_detector(image,show_image=0):
     segment_r,segment_g,segment_y = color_space_segmentation(image)
-#    fig = plt.figure(figsize=(10,10))
-#    fig.add_subplot(2,2,1)
-#    plt.imshow(image, cmap='gray')
-#    fig.add_subplot(2,2,2)
-#    plt.imshow(segment_r,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,3)
-#    plt.imshow(segment_g,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,4)
-#    plt.imshow(segment_y,vmin=0,vmax=1, cmap='gray')
-#    fig.tight_layout()
+    if show_image:
+        fig = plt.figure(figsize=(10,10))
+        fig.add_subplot(2,2,1)
+        plt.imshow(image, cmap='gray')
+        fig.add_subplot(2,2,2)
+        plt.imshow(segment_r,vmin=0,vmax=1, cmap='gray')
+        fig.add_subplot(2,2,3)
+        plt.imshow(segment_g,vmin=0,vmax=1, cmap='gray')
+        fig.add_subplot(2,2,4)
+        plt.imshow(segment_y,vmin=0,vmax=1, cmap='gray')
+        fig.tight_layout()
     score_r = np.sum(segment_r)
     score_g = np.sum(segment_g)
     score_y = np.sum(segment_y)
     print([score_r,score_g,score_y])
-    if np.max([score_r,score_g,score_y]) <= 5:
+    if np.max([score_r,score_g,score_y]) <= 0:
         return -1
     return np.argmax([score_r,score_y,score_g])
 #%% Define the computation graph
@@ -111,7 +112,6 @@ if __name__ == '__main__':
     # raw_image = mpimg.imread('img_12_388.png')
     # raw_image = mpimg.imread('img_29_434.png')
     image = image_preprocessing(raw_image)
-    temp = color_space_segmentation(image)
-    result = simple_detector(image)
+    result = simple_detector(image,show_image=1)
     print('The detection result is {}.'.format(result))
     
