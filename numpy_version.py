@@ -81,11 +81,11 @@ def simple_detector(image):
 #    fig.tight_layout()
     score_r = np.sum(segment_r)
     score_g = np.sum(segment_g)
-    score_b = np.sum(segment_y)
-    print([score_r,score_g,score_b])
-    if np.max([score_r,score_g,score_b]) <= 5:
+    score_y = np.sum(segment_y)
+    print([score_r,score_g,score_y])
+    if np.max([score_r,score_g,score_y]) <= 5:
         return -1
-    return np.argmax([score_r,score_g,score_b])
+    return np.argmax([score_r,score_y,score_g])
 #%% Define the computation graph
 ##%% Define the Holo kernal
 #kernal_hole = np.array([[ 0.0, 0.0,-1.0,-1.0,-1.0,-1.0, 0.0, 0.0],
