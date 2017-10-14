@@ -12,21 +12,8 @@ import numpy as np
 # Do not inclue the following when in ROS projects
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-#from matplotlib.colors import rgb_to_hsv
 
-##%% Define the Holo kernal
-#kernal_hole = np.array([[ 0.0, 0.0,-1.0,-1.0,-1.0,-1.0, 0.0, 0.0],
-#                        [ 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0],
-#                        [-1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,-1.0],
-#                        [-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,-1.0],
-#                        [-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,-1.0],
-#                        [-1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,-1.0],
-#                        [ 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0],
-#                        [ 0.0, 0.0,-1.0,-1.0,-1.0,-1.0, 0.0, 0.0]])
-## normalize the positive entries
-#kernal_hole[kernal_hole>0] /= np.sum(kernal_hole[kernal_hole>0]);
-## normalize and PENALIZE the negative entries !!!!!!!!!!!!!
-#kernal_hole[kernal_hole<0] /= -0.66*np.sum(kernal_hole[kernal_hole<0]);
+
 #%% Image preprocessing
 def image_preprocessing(raw_image):
     # Convert to numpy array
@@ -44,16 +31,6 @@ def color_channel_extraction(image):
     r_channel = image[:,:,0]
     g_channel = image[:,:,1]
     b_channel = image[:,:,2]
-#    fig = plt.figure(figsize=(10,10))
-#    fig.add_subplot(2,2,1)
-#    plt.imshow(image, cmap='gray')
-#    fig.add_subplot(2,2,2)
-#    plt.imshow(r_channel,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,3)
-#    plt.imshow(g_channel,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,4)
-#    plt.imshow(b_channel,vmin=0,vmax=1, cmap='gray')
-#    fig.tight_layout()
     return v_channel, s_channel, r_channel, g_channel, b_channel
 
 #%% Apply color filter on the image
@@ -64,17 +41,6 @@ def weighted_channels(image):
     weighted_r = weight_v*weight_s*r_channel
     weighted_g = weight_v*weight_s*g_channel
     weighted_b = weight_v*weight_s*b_channel
-#    weighted_image = np.stack([weighted_r,weighted_g,weighted_b],axis=2)
-#    fig = plt.figure(figsize=(10,10))
-#    fig.add_subplot(2,2,1)
-#    plt.imshow(weighted_image, cmap='gray')
-#    fig.add_subplot(2,2,2)
-#    plt.imshow(weighted_r,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,3)
-#    plt.imshow(weighted_g,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,4)
-#    plt.imshow(weighted_b,vmin=0,vmax=1, cmap='gray')
-#    fig.tight_layout()
     return weighted_r,weighted_g,weighted_b
 
 #%% color space segmentation
@@ -96,21 +62,9 @@ def color_space_segmentation(image):
     temp2[partition_y] = weighted_g[partition_y]
     segment_y = np.max(np.stack([temp1,temp2],axis=2),axis=2)
     # Threashold
-    segment_r = np.clip(segment_r*1.1-0.1,0,1)
-    segment_g = np.clip(segment_g*1.1-0.1,0,1)
-    segment_y = np.clip(segment_y*1.1-0.1,0,1)
-    # plot
-#    composition = np.stack([segment_r,segment_g,segment_y],axis=2)
-#    fig = plt.figure(figsize=(10,10))
-#    fig.add_subplot(2,2,1)
-#    plt.imshow(composition, cmap='gray')
-#    fig.add_subplot(2,2,2)
-#    plt.imshow(segment_r,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,3)
-#    plt.imshow(segment_g,vmin=0,vmax=1, cmap='gray')
-#    fig.add_subplot(2,2,4)
-#    plt.imshow(segment_y,vmin=0,vmax=1, cmap='gray')
-#    fig.tight_layout()
+    segment_r = np.clip(segment_r*2-1,0,1)
+    segment_g = np.clip(segment_g*2-1,0,1)
+    segment_y = np.clip(segment_y*2-1,0,1)
     return segment_r,segment_g,segment_y
 #%% Simple classifier
 def simple_detector(image):
@@ -128,9 +82,24 @@ def simple_detector(image):
     score_r = np.sum(segment_r)
     score_g = np.sum(segment_g)
     score_b = np.sum(segment_y)
+    print([score_r,score_g,score_b])
+    if np.max([score_r,score_g,score_b]) <= 5:
+        return -1
     return np.argmax([score_r,score_g,score_b])
 #%% Define the computation graph
-
+##%% Define the Holo kernal
+#kernal_hole = np.array([[ 0.0, 0.0,-1.0,-1.0,-1.0,-1.0, 0.0, 0.0],
+#                        [ 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0],
+#                        [-1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,-1.0],
+#                        [-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,-1.0],
+#                        [-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,-1.0],
+#                        [-1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0,-1.0],
+#                        [ 0.0,-1.0, 0.0, 0.0, 0.0, 0.0,-1.0, 0.0],
+#                        [ 0.0, 0.0,-1.0,-1.0,-1.0,-1.0, 0.0, 0.0]])
+## normalize the positive entries
+#kernal_hole[kernal_hole>0] /= np.sum(kernal_hole[kernal_hole>0]);
+## normalize and PENALIZE the negative entries !!!!!!!!!!!!!
+#kernal_hole[kernal_hole<0] /= -0.66*np.sum(kernal_hole[kernal_hole<0]);
 
 #%% Overall test
 if __name__ == '__main__':
@@ -140,6 +109,7 @@ if __name__ == '__main__':
     # raw_image = mpimg.imread('dayClip5--01177.png')
     # raw_image = mpimg.imread('img_10_575.png')
     # raw_image = mpimg.imread('img_12_388.png')
+    # raw_image = mpimg.imread('img_29_434.png')
     image = image_preprocessing(raw_image)
     temp = color_space_segmentation(image)
     result = simple_detector(image)
