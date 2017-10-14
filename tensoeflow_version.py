@@ -38,8 +38,30 @@ def image_preprocessing(raw_image):
     image[image<0.1] = 0.1
     return image
 #%% Transform color space
-def color_space_transform(image):
-    pass
+def color_channel_extraction(image):
+    v_channel = np.max(image,axis=2)
+    s_channel = (v_channel-np.min(image,axis=2))/v_channel
+    r_channel = image[:,:,0];
+    g_channel = image[:,:,1];
+    y_channel = (image[:,:,0]+image[:,:,1])/2;
+    return v_channel, s_channel, r_channel, g_channel, y_channel
+
+#%% Apply color filter on the image
+def filtered_channels(image):
+    v_channel, s_channel, r_channel, g_channel, y_channel = color_channel_extraction(image)
+    weight_v = np.clip(v_channel*2-1,0,1)
+    weight_s = np.clip(s_channel*2-1,0,1)
+    filtered_r = weight_v*weight_s*r_channel
+    filtered_g = weight_v*weight_s*g_channel
+    filtered_y = weight_v*weight_s*y_channel
+    return filtered_r,filtered_g,filtered_y
+#%% Simple classifier
+def simple_detector(image):
+    filtered_r,filtered_g,filtered_y = filtered_channels(image)
+    score_r = np.sum(filtered_r)
+    score_g = np.sum(filtered_g)
+    score_y = np.sum(filtered_y)
+    return np.argmax([score_r,score_g,score_y])
 #%% Define the computation graph
 
 
