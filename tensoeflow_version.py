@@ -44,6 +44,16 @@ def color_channel_extraction(image):
     r_channel = image[:,:,0]
     g_channel = image[:,:,1]
     b_channel = image[:,:,2]
+#    fig = plt.figure(figsize=(10,10))
+#    fig.add_subplot(2,2,1)
+#    plt.imshow(image, cmap='gray')
+#    fig.add_subplot(2,2,2)
+#    plt.imshow(r_channel,vmin=0,vmax=1, cmap='gray')
+#    fig.add_subplot(2,2,3)
+#    plt.imshow(g_channel,vmin=0,vmax=1, cmap='gray')
+#    fig.add_subplot(2,2,4)
+#    plt.imshow(b_channel,vmin=0,vmax=1, cmap='gray')
+#    fig.tight_layout()
     return v_channel, s_channel, r_channel, g_channel, b_channel
 
 #%% Apply color filter on the image
@@ -59,31 +69,65 @@ def weighted_channels(image):
 #    fig.add_subplot(2,2,1)
 #    plt.imshow(weighted_image, cmap='gray')
 #    fig.add_subplot(2,2,2)
-#    plt.imshow(weighted_r, cmap='gray')
+#    plt.imshow(weighted_r,vmin=0,vmax=1, cmap='gray')
 #    fig.add_subplot(2,2,3)
-#    plt.imshow(weighted_g, cmap='gray')
+#    plt.imshow(weighted_g,vmin=0,vmax=1, cmap='gray')
 #    fig.add_subplot(2,2,4)
-#    plt.imshow(weighted_b, cmap='gray')
+#    plt.imshow(weighted_b,vmin=0,vmax=1, cmap='gray')
 #    fig.tight_layout()
     return weighted_r,weighted_g,weighted_b
 
-#%%
-#%% Simple classifier
-def simple_detector(image):
-    filtered_r,filtered_g,filtered_b = weighted_channels(image)
+#%% color space segmentation
+def color_space_segmentation(image):
+    weighted_r,weighted_g,weighted_b = weighted_channels(image)
+    # set partition
+    partition_r = weighted_r-2*weighted_g>0
+    partition_g = weighted_g-2*weighted_r>0
+    partition_y = np.logical_and(weighted_r-2*weighted_g<0, weighted_g-2*weighted_r<0)
+    # segment pixel values to different partition
+    segment_r = np.zeros(weighted_r.shape)
+    segment_g = np.zeros(weighted_r.shape)
+    segment_y = np.zeros(weighted_r.shape)
+    segment_r[partition_r] = weighted_r[partition_r]
+    segment_g[partition_g] = weighted_g[partition_g]
+    temp1 = segment_y
+    temp2 = segment_y
+    temp1[partition_y] = weighted_r[partition_y]
+    temp2[partition_y] = weighted_g[partition_y]
+    segment_y = np.max(np.stack([temp1,temp2],axis=2),axis=2)
+    # Threashold
+    segment_r = np.clip(segment_r*1.1-0.1,0,1)
+    segment_g = np.clip(segment_g*1.1-0.1,0,1)
+    segment_y = np.clip(segment_y*1.1-0.1,0,1)
+    # plot
+#    composition = np.stack([segment_r,segment_g,segment_y],axis=2)
 #    fig = plt.figure(figsize=(10,10))
 #    fig.add_subplot(2,2,1)
-#    plt.imshow(image)
+#    plt.imshow(composition, cmap='gray')
 #    fig.add_subplot(2,2,2)
-#    plt.imshow(filtered_r)
+#    plt.imshow(segment_r,vmin=0,vmax=1, cmap='gray')
 #    fig.add_subplot(2,2,3)
-#    plt.imshow(filtered_g)
+#    plt.imshow(segment_g,vmin=0,vmax=1, cmap='gray')
 #    fig.add_subplot(2,2,4)
-#    plt.imshow(filtered_b)
+#    plt.imshow(segment_y,vmin=0,vmax=1, cmap='gray')
 #    fig.tight_layout()
-    score_r = np.sum(filtered_r)
-    score_g = np.sum(filtered_g)
-    score_b = np.sum(filtered_b)
+    return segment_r,segment_g,segment_y
+#%% Simple classifier
+def simple_detector(image):
+    segment_r,segment_g,segment_y = color_space_segmentation(image)
+    fig = plt.figure(figsize=(10,10))
+    fig.add_subplot(2,2,1)
+    plt.imshow(image, cmap='gray')
+    fig.add_subplot(2,2,2)
+    plt.imshow(segment_r,vmin=0,vmax=1, cmap='gray')
+    fig.add_subplot(2,2,3)
+    plt.imshow(segment_g,vmin=0,vmax=1, cmap='gray')
+    fig.add_subplot(2,2,4)
+    plt.imshow(segment_y,vmin=0,vmax=1, cmap='gray')
+    fig.tight_layout()
+    score_r = np.sum(segment_r)
+    score_g = np.sum(segment_g)
+    score_b = np.sum(segment_y)
     return np.argmax([score_r,score_g,score_b])
 #%% Define the computation graph
 
@@ -97,6 +141,7 @@ if __name__ == '__main__':
     # raw_image = mpimg.imread('img_10_575.png')
     # raw_image = mpimg.imread('img_12_388.png')
     image = image_preprocessing(raw_image)
+    temp = color_space_segmentation(image)
     result = simple_detector(image)
     print('The detection result is {}.'.format(result))
     
