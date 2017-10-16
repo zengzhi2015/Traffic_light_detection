@@ -12,6 +12,7 @@ import numpy as np
 # Do not inclue the following when in ROS projects
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import cv2
 
 
 #%% Image preprocessing
@@ -62,9 +63,60 @@ def color_space_segmentation(image):
     temp2[partition_y] = weighted_g[partition_y]
     segment_y = np.max(np.stack([temp1,temp2],axis=2),axis=2)
     # Threashold
-    segment_r = np.clip(segment_r*2-1,0,1)
-    segment_g = np.clip(segment_g*2-1,0,1)
-    segment_y = np.clip(segment_y*2-1,0,1)
+#    segment_r = np.clip(segment_r*2-1,0,1)
+#    segment_g = np.clip(segment_g*2-1,0,1)
+#    segment_y = np.clip(segment_y*2-1,0,1)
+    
+    #
+        # Setup SimpleBlobDetector parameters.
+    params = cv2.SimpleBlobDetector_Params()
+    params.filterByColor = False
+    # Change thresholds
+    params.minThreshold = 0
+    params.maxThreshold = 255
+    params.thresholdStep = 1
+    
+     
+    # Filter by Area.
+    params.filterByArea = True
+    params.minArea = 10
+    params.maxArea = 1000
+     
+    # Filter by Circularity
+    params.filterByCircularity = True
+    params.minCircularity = 0.5
+     
+    # Filter by Convexity
+    params.filterByConvexity = False
+    params.minConvexity = 0.1
+     
+    # Filter by Inertia
+    params.filterByInertia = True
+    params.minInertiaRatio = 0.5
+    
+    print(params.filterByColor)
+    print(params.filterByArea)
+    print(params.filterByCircularity)
+    print(params.filterByInertia)
+    print(params.filterByConvexity)
+        
+    # Set up the detector with default parameters.
+    detector = cv2.SimpleBlobDetector_create(params)
+    # Detect blobs.
+    test_image = np.uint8(segment_r*255)
+    test_image[test_image>100] = 255
+    test_image[test_image<=100] = 0
+    kernel = np.ones((5,5),np.uint8)
+    test_image = cv2.dilate(test_image,kernel,iterations = 1)
+    keypoints = detector.detect(test_image)
+    # Draw detected blobs as red circles.
+    # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
+    im_with_keypoints = cv2.drawKeypoints(test_image, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # Show keypoints
+    cv2.imshow("Keypoints", im_with_keypoints)
+    cv2.waitKey(-1)
+    
+    
     return segment_r,segment_g,segment_y
 #%% Simple classifier
 def simple_detector(image,show_image=0):
@@ -105,13 +157,14 @@ def simple_detector(image,show_image=0):
 #%% Overall test
 if __name__ == '__main__':
     # Image reading and preprocessing
-    raw_image = mpimg.imread('dayClip10--00023.png')
+    # raw_image = mpimg.imread('dayClip10--00023.png')
     # raw_image = mpimg.imread('dayClip5--00015.png')
-    # raw_image = mpimg.imread('dayClip5--01177.png')
+    raw_image = mpimg.imread('dayClip5--01177.png')
     # raw_image = mpimg.imread('img_10_575.png')
     # raw_image = mpimg.imread('img_12_388.png')
     # raw_image = mpimg.imread('img_29_434.png')
     image = image_preprocessing(raw_image)
     result = simple_detector(image,show_image=1)
     print('The detection result is {}.'.format(result))
+
     
